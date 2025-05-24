@@ -1,38 +1,42 @@
 <?php
 
-use App\Http\Controllers\ProfileController;
-use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
+use App\Http\Controllers\RoleSelectionController;
+use App\Http\Controllers\AdminDashboardController;
+use App\Http\Controllers\KaryawanDashboardController;
+use App\Http\Controllers\KacamataController;
+use App\Http\Controllers\UserController;
 
-/*
-|--------------------------------------------------------------------------
-| Web Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register web routes for your application. These
-| routes are loaded by the RouteServiceProvider within a group which
-| contains the "web" middleware group. Now create something great!
-|
-*/
+// Role selection (homepage)
+Route::get('/', [RoleSelectionController::class, 'index'])->name('home');
+Route::post('/select-role', [RoleSelectionController::class, 'selectRole'])->name('select.role');
 
-Route::get('/', function () {
-    return Inertia::render('Welcome', [
-        'canLogin' => Route::has('login'),
-        'canRegister' => Route::has('register'),
-        'laravelVersion' => Application::VERSION,
-        'phpVersion' => PHP_VERSION,
-    ]);
+// Admin routes
+Route::middleware(['role:superadmin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
+    Route::resource('users', UserController::class);
 });
 
-Route::get('/dashboard', function () {
-    return Inertia::render('Dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
-
-Route::middleware('auth')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+// Karyawan routes
+Route::middleware(['role:karyawan'])->prefix('karyawan')->name('karyawan.')->group(function () {
+    Route::get('/dashboard', [KaryawanDashboardController::class, 'index'])->name('dashboard');
 });
 
-require __DIR__.'/auth.php';
+// Kacamata routes (accessible by both roles)
+// Kacamata routes (accessible by both roles)
+Route::middleware(['role:superadmin,karyawan'])->group(function () {
+    Route::resource('kacamata', KacamataController::class)->except(['show']);
+    Route::get('kacamata/{kacamata}/status', [KacamataController::class, 'editStatus'])->name('kacamata.edit-status');
+    Route::put('kacamata/{kacamata}/status', [KacamataController::class, 'updateStatus'])->name('kacamata.update-status');
+    Route::get('kacamata/{kacamata}/label', [KacamataController::class, 'printLabel'])->name('kacamata.print-label');
+    
+    // Ubah route edit dan update untuk menggunakan {id}
+    Route::get('kacamata/{id}/edit', [KacamataController::class, 'edit'])->name('kacamata.edit');
+    Route::put('kacamata/{id}', [KacamataController::class, 'update'])->name('kacamata.update');
+});
+
+// Simple logout route
+Route::get('/logout', function () {
+    // In a real app, this would handle proper logout
+    return redirect('/')->with('success', 'Logged out successfully');
+})->name('logout');
