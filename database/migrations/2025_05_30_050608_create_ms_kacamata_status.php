@@ -13,14 +13,10 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('users', function (Blueprint $table) {
+        Schema::create('ms_kacamata_statuses', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->string('email')->unique();
-            $table->timestamp('email_verified_at')->nullable();
-            $table->enum('roles', ['Superadmin','Karyawan'])->default('Karyawan');
-            $table->string('password');
-            $table->rememberToken();
+            $table->enum('status', ['Tersedia','Dipinjam','Terjual','Cacat','Lainnya'])->default('Tersedia');
+            $table->text('description')->nullable();
             $table->timestamps();
         });
     }
@@ -32,6 +28,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('users');
+        Schema::dropIfExists('ms_kacamata_statuses');
     }
 };

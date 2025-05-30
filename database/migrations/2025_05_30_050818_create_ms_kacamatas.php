@@ -13,14 +13,14 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('users', function (Blueprint $table) {
+        Schema::create('ms_kacamatas', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->string('email')->unique();
-            $table->timestamp('email_verified_at')->nullable();
-            $table->enum('roles', ['Superadmin','Karyawan'])->default('Karyawan');
-            $table->string('password');
-            $table->rememberToken();
+            $table->int('ms_merks_id')->unsigned();
+            $table->int('ms_lacis_id')->unsigned();
+            $table->int('ms_kacamata_statuses_id')->unsigned();
+            $table->string('tipe');
+            //TAMBAHKAN FIELD UNTUK FILE FOTO
+            $table->string('bahan');
             $table->timestamps();
         });
     }
@@ -32,6 +32,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('users');
+        Schema::dropIfExists('ms_kacamatas');
     }
 };
