@@ -13,9 +13,9 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('ms_merks', function (Blueprint $table) {
+      Schema::create('ms_merks', function (Blueprint $table) {
             $table->id();
-            $table->string('merk');
+            $table->string('merk')->unique(); // Tambahkan unique
             $table->timestamps();
         });
     }

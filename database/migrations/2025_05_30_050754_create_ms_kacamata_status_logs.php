@@ -15,10 +15,11 @@ return new class extends Migration
     {
         Schema::create('ms_kacamata_status_logs', function (Blueprint $table) {
             $table->id();
-            $table->integer('ms_kacamatas_id')->unsigned();
-            $table->integer('ms_kacamata_statuses_id')->unsigned();
-            $table->integer('user_id')->unsigned();
+            $table->foreignId('ms_kacamatas_id')->constrained('ms_kacamatas');
+            $table->foreignId('ms_kacamata_statuses_id')->constrained('ms_kacamata_statuses');
+            $table->foreignId('user_id')->constrained('users');
             $table->text('notes')->nullable();
+            $table->timestamp('timestamp')->useCurrent(); // Tambahkan timestamp
             $table->timestamps();
         });
     }
