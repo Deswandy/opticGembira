@@ -1,30 +1,20 @@
 <?php
+// database/migrations/xxxx_xx_xx_create_ms_lacis_table.php
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
+return new class extends Migration {
     public function up()
     {
         Schema::create('ms_lacis', function (Blueprint $table) {
             $table->id();
-            $table->string('laci', 3)->unique();
+            $table->string('laci', 3);
             $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
     public function down()
     {
         Schema::dropIfExists('ms_lacis');
