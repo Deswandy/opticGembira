@@ -15,9 +15,9 @@ return new class extends Migration
     {
         Schema::create('ms_kacamatas', function (Blueprint $table) {
             $table->id();
-            $table->int('ms_merks_id')->unsigned();
-            $table->int('ms_lacis_id')->unsigned();
-            $table->int('ms_kacamata_statuses_id')->unsigned();
+            $table->integer('ms_merks_id')->unsigned();
+            $table->integer('ms_lacis_id')->unsigned();
+            $table->integer('ms_kacamata_statuses_id')->unsigned();
             $table->string('tipe');
             //TAMBAHKAN FIELD UNTUK FILE FOTO
             $table->string('bahan');
