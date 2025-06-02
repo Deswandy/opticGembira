@@ -8,6 +8,7 @@ use App\Http\Controllers\MsMerkController;
 use App\Http\Controllers\MsLaciController;
 use App\Http\Controllers\MsKacamataStatusController;
 use App\Http\Controllers\MsKacamataStatusLogController;
+use App\Http\Controllers\ProfileController;   
 
 /*
 |--------------------------------------------------------------------------
@@ -26,11 +27,21 @@ Route::get('/', function () {
 
 Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
+})->middleware(['auth', 'verified'])->name('dashboard');
+
+Route::middleware('auth')->group(function () {
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    
 });
 
-// Route resource tanpa auth middleware
-Route::resource('ms-kacamatas', MsKacamataController::class);
-Route::resource('ms-merks', MsMerkController::class);
-Route::resource('ms-lacis', MsLaciController::class);
-Route::resource('ms-kacamata-statuses', MsKacamataStatusController::class);
-Route::resource('ms-kacamata-status-logs', MsKacamataStatusLogController::class);
+Route::middleware(['auth','verified'])->group(function () {
+    Route::resource('ms-kacamatas', MsKacamataController::class);
+    Route::resource('ms-merks', MsMerkController::class);
+    Route::resource('ms-lacis', MsLaciController::class);
+    Route::resource('ms-kacamata-statuses', MsKacamataStatusController::class);
+    Route::resource('ms-kacamata-status-logs', MsKacamataStatusLogController::class);
+});
+
+require __DIR__.'/auth.php';

@@ -7,13 +7,16 @@ use App\Models\MsLaci;
 use App\Models\MsMerk;
 use App\Models\MsKacamataStatus;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class MsKacamataController extends Controller
 {
     public function index()
     {
         $kacamatas = MsKacamata::with(['merkRelasi', 'laciRelasi', 'statusRelasi'])->get();
-        return response()->json($kacamatas);
+        return Inertia::render('Kacamata/Index',[
+            'kacamata'=> $kacamatas
+        ]);
     }
 
     public function store(Request $request)
