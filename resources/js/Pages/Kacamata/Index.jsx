@@ -11,6 +11,7 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog";
+import Form from "./Form";
 
 const Index = ({ auth, error, kacamata }) => {
     console.log(kacamata);
@@ -21,7 +22,7 @@ const Index = ({ auth, error, kacamata }) => {
             error={error}
             header={
                 <h2 className="font-semibold text-xl text-gray-800 leading-tight">
-                    Dashboard
+                    Kacamata
                 </h2>
             }
         >
@@ -40,16 +41,15 @@ const Index = ({ auth, error, kacamata }) => {
                                 <DialogContent>
                                     <DialogHeader>
                                         <DialogTitle>
-                                            Are you absolutely sure?
+                                            Kacamata Baru
                                         </DialogTitle>
                                         <DialogDescription>
-                                            This action cannot be undone. This
-                                            will permanently delete your account
-                                            and remove your data from our
-                                            servers.
+                                            Tambahkan data kacamata baru ke database
                                         </DialogDescription>
                                     </DialogHeader>
-                                    <div className="">Content here</div>
+                                    <div id="form" className="">
+                                        <Form />
+                                    </div>
                                 </DialogContent>
                             </Dialog>
                         </div>
