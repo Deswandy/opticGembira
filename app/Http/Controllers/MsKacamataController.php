@@ -14,26 +14,32 @@ class MsKacamataController extends Controller
     public function index()
     {
         $kacamatas = MsKacamata::with(['merkRelasi', 'laciRelasi', 'statusRelasi'])->get();
-        return Inertia::render('Kacamata/Index',[
-            'kacamata'=> $kacamatas
+        return Inertia::render('Kacamata/Index', [
+            'kacamata' => $kacamatas
         ]);
     }
 
     public function store(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'ms_merks_id' => 'required|exists:ms_merks,id',
             'ms_lacis_id' => 'required|exists:ms_lacis,id',
             'ms_kacamata_statuses_id' => 'required|exists:ms_kacamata_statuses,id',
-            'tipe' => 'required|string',
-            'bahan' => 'required|string',
-            'foto' => 'nullable|string',
+            'tipe' => 'required|string|max:255',
+            'bahan' => 'required|string|max:255',
+            'foto' => 'nullable|image|mimes:jpg,jpeg,png|max:2048', // validate file
         ]);
 
-        $kacamata = MsKacamata::create($request->all());
+        if ($request->hasFile('foto')) {
+            $path = $request->file('foto')->store('kacamata', 'public'); // stored in storage/app/public/kacamata
+            $validated['foto'] = $path;
+        }
+
+        $kacamata = MsKacamata::create($validated);
 
         return response()->json($kacamata, 201);
     }
+
 
     public function show($id)
     {

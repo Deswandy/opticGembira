@@ -11,6 +11,7 @@ export default function Login({ status, canResetPassword }) {
     const { data, setData, post, processing, errors, reset } = useForm({
         email: '',
         password: '',
+        
         remember: '',
     });
 

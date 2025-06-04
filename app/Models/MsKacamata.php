@@ -10,6 +10,14 @@ class MsKacamata extends Model
     use HasFactory;
 
     protected $table = 'ms_kacamatas';
+    protected $fillable = [
+        'ms_merks_id',
+        'ms_lacis_id',
+        'ms_kacamata_statuses_id',
+        'tipe',
+        'bahan',
+        'foto',
+    ];
 
     public function merkRelasi()
     {

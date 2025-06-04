@@ -48,7 +48,7 @@ const Index = ({ auth, error, kacamata }) => {
                                         </DialogDescription>
                                     </DialogHeader>
                                     <div id="form" className="">
-                                        <Form />
+                                        <Form kacamata={kacamata} />
                                     </div>
                                 </DialogContent>
                             </Dialog>
