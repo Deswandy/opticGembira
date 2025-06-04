@@ -10,8 +10,11 @@ return new class extends Migration {
     {
         Schema::create('ms_kacamatas', function (Blueprint $table) {
             $table->id();
+            $table->string('newid', 3)->unique();
+
 
             $table->unsignedBigInteger('ms_merks_id');
+            
             $table->unsignedBigInteger('ms_lacis_id');
             $table->unsignedBigInteger('ms_kacamata_statuses_id');
 
