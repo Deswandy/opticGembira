@@ -1,5 +1,4 @@
 import React, { useRef } from 'react'
-import { useEffect } from 'react';
 import Checkbox from '@/Components/Checkbox';
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
@@ -7,151 +6,156 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import { Input } from '@/Components/ui/input';
 import { Head, Link, useForm } from '@inertiajs/react';
-import { DialogClose } from '@/Components/ui/dialog';
-// import {z} from 'zod';
-// import {zodResolver} from "@hookform/resolvers/zod"
-
-
-// const formSchema= z.object({
-//     tipe: z.string().min(5,{
-//         message: "Tipemu jelek"
-//     }).max(50, {
-//         message: "Tipemu kepanjangan"
-//     }),
-// })
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 const Form = ({ kacamata, onSuccess }) => {
-    const lacis = Array.from(
-        new Map(kacamata.map((item) => [item.laci_relasi.id, item.laci_relasi])).values()
-    );
-    const merks = Array.from(
-        new Map(kacamata.map((item) => [item.merk_relasi.id, item.merk_relasi])).values()
-    );
-    const statuses = Array.from(
-        new Map(kacamata.map((item) => [item.status_relasi.id, item.status_relasi])).values()
-    );
+  const lacis = Array.from(
+    new Map(kacamata.map((item) => [item.laci_relasi.id, item.laci_relasi])).values()
+  );
+  const merks = Array.from(
+    new Map(kacamata.map((item) => [item.merk_relasi.id, item.merk_relasi])).values()
+  );
+  const statuses = Array.from(
+    new Map(kacamata.map((item) => [item.status_relasi.id, item.status_relasi])).values()
+  );
+  const defaultStatus = statuses.find(status => status.id === 1)?.id.toString() || "";
 
-    const { data, setData, post, processing, errors } = useForm({
-        tipe: "",
-        bahan: "",
-        ms_lacis_id: "",
-        ms_merks_id: "",
-        ms_kacamata_statuses_id: "",
-        foto: null,
+  const { data, setData, post, processing, errors } = useForm({
+    tipe: "",
+    bahan: "",
+    ms_lacis_id: "",
+    ms_merks_id: "",
+    ms_kacamata_statuses_id: defaultStatus,
+    foto: null,
+  });
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    const formData = new FormData();
+    formData.append('tipe', data.tipe);
+    formData.append('bahan', data.bahan);
+    formData.append('ms_merks_id', data.ms_merks_id);
+    formData.append('ms_lacis_id', data.ms_lacis_id);
+    formData.append('ms_kacamata_statuses_id', data.ms_kacamata_statuses_id);
+
+    if (data.foto) {
+      formData.append('foto', data.foto);
+    }
+
+    post(route('ms-kacamatas.store'), {
+      data: formData,
+      forceFormData: true,
+      onSuccess: () => {
+        if (onSuccess) onSuccess();
+      },
     });
+  };
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
+  const handleOnChange = (e) => {
+    const { name, value, type, files } = e.target;
+    setData(name, type === "file" ? files[0] : value);
+  };
 
-        const formData = new FormData();
-        formData.append('tipe', data.tipe);
-        formData.append('bahan', data.bahan);
-        formData.append('ms_merks_id', data.ms_merks_id);
-        formData.append('ms_lacis_id', data.ms_lacis_id);
-        formData.append('ms_kacamata_statuses_id', data.ms_kacamata_statuses_id);
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="flex gap-4">
+        <div className="w-1/2">
+          <InputLabel htmlFor="tipe" value="Tipe" />
+          <TextInput id="tipe" name="tipe" value={data.tipe} onChange={handleOnChange} className="mt-1 block w-full" />
+          <InputError message={errors.tipe} className="mt-2" />
+        </div>
 
-        if (data.foto) {
-            formData.append('foto', data.foto);
-        }
+        <div className="w-1/2">
+          <InputLabel htmlFor="bahan" value="Bahan" />
+          <TextInput id="bahan" name="bahan" value={data.bahan} onChange={handleOnChange} className="mt-1 block w-full" />
+          <InputError message={errors.bahan} className="mt-2" />
+        </div>
+      </div>
 
-        post(route('ms-kacamatas.store'), {
-            data: formData,
-            forceFormData: true,
-            onSuccess: () => {
-                if (onSuccess) onSuccess();
-            }
-        });
-    };
+      <div>
+        <InputLabel htmlFor="ms_lacis_id">Laci</InputLabel>
+        <Select
+          value={data.ms_lacis_id}
+          onValueChange={(value) => setData('ms_lacis_id', value)}
+        >
+          <SelectTrigger className="mt-1 w-full">
+            <SelectValue placeholder="Pilih Laci" />
+          </SelectTrigger>
+          <SelectContent>
+            {lacis.map((laci) => (
+              <SelectItem key={laci.id} value={laci.id.toString()}>
+                {laci.laci}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <InputError message={errors.ms_lacis_id} className="mt-2" />
+      </div>
 
+      <div>
+        <InputLabel htmlFor="ms_merks_id">Merk</InputLabel>
+        <Select
+          value={data.ms_merks_id}
+          onValueChange={(value) => setData('ms_merks_id', value)}
+        >
+          <SelectTrigger className="mt-1 w-full">
+            <SelectValue placeholder="Pilih Merk" />
+          </SelectTrigger>
+          <SelectContent>
+            {merks.map((merk) => (
+              <SelectItem key={merk.id} value={merk.id.toString()}>
+                {merk.merk}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <InputError message={errors.ms_merks_id} className="mt-2" />
+      </div>
 
-    const handleOnChange = (e) => {
-        const { name, value, type, files } = e.target;
-        setData(name, type === "file" ? files[0] : value);
-    };
+      <div>
+        <InputLabel htmlFor="ms_kacamata_statuses_id">Status</InputLabel>
+        <Select
+          value={data.ms_kacamata_statuses_id}
+          onValueChange={(value) => setData('ms_kacamata_statuses_id', value)}
+        >
+          <SelectTrigger className="mt-1 w-full">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {statuses.map((status) => (
+              <SelectItem key={status.id} value={status.id.toString()}>
+                {status.status}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <InputError message={errors.ms_kacamata_statuses_id} className="mt-2" />
+      </div>
 
-    return (
-        <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-                <InputLabel htmlFor="tipe" value="Tipe" />
-                <TextInput id="tipe" name="tipe" value={data.tipe} onChange={handleOnChange} className="mt-1 block w-full" />
-                <InputError message={errors.tipe} className="mt-2" />
-            </div>
+      <div>
+        <InputLabel htmlFor="foto" value="Foto (opsional)" />
+        <Input
+          id="foto"
+          name="foto"
+          type="file"
+          onChange={handleOnChange}
+          className="mt-1 block w-full"
+        />
+        <InputError message={errors.foto} className="mt-2" />
+      </div>
 
-            <div>
-                <InputLabel htmlFor="bahan" value="Bahan" />
-                <TextInput id="bahan" name="bahan" value={data.bahan} onChange={handleOnChange} className="mt-1 block w-full" />
-                <InputError message={errors.bahan} className="mt-2" />
-            </div>
-
-            <div>
-                <InputLabel htmlFor="ms_lacis_id" value="Laci" />
-                <select
-                    id="ms_lacis_id"
-                    name="ms_lacis_id"
-                    value={data.ms_lacis_id}
-                    onChange={handleOnChange}
-                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
-                >
-                    <option value="">Pilih Laci</option>
-                    {lacis.map((laci) => (
-                        <option key={laci.id} value={laci.id}>{laci.laci}</option>
-                    ))}
-                </select>
-                <InputError message={errors.ms_lacis_id} className="mt-2" />
-            </div>
-
-            <div>
-                <InputLabel htmlFor="ms_merks_id" value="Merk" />
-                <select
-                    id="ms_merks_id"
-                    name="ms_merks_id"
-                    value={data.ms_merks_id}
-                    onChange={handleOnChange}
-                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
-                >
-                    <option value="">Pilih Merk</option>
-                    {merks.map((merk) => (
-                        <option key={merk.id} value={merk.id}>{merk.merk}</option>
-                    ))}
-                </select>
-                <InputError message={errors.ms_merks_id} className="mt-2" />
-            </div>
-
-            <div>
-                <InputLabel htmlFor="ms_kacamata_statuses_id" value="Status" />
-                <select
-                    id="ms_kacamata_statuses_id"
-                    name="ms_kacamata_statuses_id"
-                    value={data.ms_kacamata_statuses_id}
-                    onChange={handleOnChange}
-                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
-                >
-                    <option value="">Pilih Status</option>
-                    {statuses.map((status) => (
-                        <option key={status.id} value={status.id}>{status.status}</option>
-                    ))}
-                </select>
-                <InputError message={errors.ms_kacamata_statuses_id} className="mt-2" />
-            </div>
-
-            <div>
-                <InputLabel htmlFor="foto" value="Foto (opsional)" />
-                <Input
-                    id="foto"
-                    name="foto"
-                    type="file"
-                    onChange={handleOnChange}
-                    className="mt-1 block w-full"
-                />
-                <InputError message={errors.foto} className="mt-2" />
-            </div>
-
-            <div>
-                <PrimaryButton disabled={processing}>Simpan</PrimaryButton>
-            </div>
-        </form>
-    );
+      <div>
+        <PrimaryButton disabled={processing}>Simpan</PrimaryButton>
+      </div>
+    </form>
+  );
 };
 
-
-export default Form
+export default Form;
