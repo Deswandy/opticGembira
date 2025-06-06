@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useRef } from 'react'
 import { useEffect } from 'react';
 import Checkbox from '@/Components/Checkbox';
 import InputError from '@/Components/InputError';
@@ -7,6 +7,7 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import { Input } from '@/Components/ui/input';
 import { Head, Link, useForm } from '@inertiajs/react';
+import { DialogClose } from '@/Components/ui/dialog';
 // import {z} from 'zod';
 // import {zodResolver} from "@hookform/resolvers/zod"
 
@@ -19,7 +20,7 @@ import { Head, Link, useForm } from '@inertiajs/react';
 //     }),
 // })
 
-const Form = ({ kacamata }) => {
+const Form = ({ kacamata, onSuccess }) => {
     const lacis = Array.from(
         new Map(kacamata.map((item) => [item.laci_relasi.id, item.laci_relasi])).values()
     );
@@ -56,6 +57,9 @@ const Form = ({ kacamata }) => {
         post(route('ms-kacamatas.store'), {
             data: formData,
             forceFormData: true,
+            onSuccess: () => {
+                if (onSuccess) onSuccess();
+            }
         });
     };
 

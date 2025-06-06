@@ -17,6 +17,7 @@ class MsKacamata extends Model
         'tipe',
         'bahan',
         'foto',
+        'newid',
     ];
 
     public function merkRelasi()

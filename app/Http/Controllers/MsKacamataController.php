@@ -44,7 +44,7 @@ class MsKacamataController extends Controller
 
         $kacamata = MsKacamata::create($validated);
 
-        return response()->json($kacamata, 201);
+        return to_route('ms-kacamatas.index');
     }
 
 

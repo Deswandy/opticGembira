@@ -1,4 +1,4 @@
-import React from "react";
+import {React,useState} from "react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { Head } from "@inertiajs/react";
 import KacamataTable from "@/Components/KacamataTable";
@@ -15,6 +15,7 @@ import Form from "./Form";
 
 const Index = ({ auth, error, kacamata }) => {
     console.log(kacamata);
+    const [dialogOpen, setDialogOpen] = useState(false);
 
     return (
         <AuthenticatedLayout
@@ -32,9 +33,9 @@ const Index = ({ auth, error, kacamata }) => {
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
                     <div>
                         <div className=" mb-4">
-                            <Dialog>
+                            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
                                 <DialogTrigger>
-                                    <Button className="bg-green-500 hover:bg-green-600">
+                                    <Button className="bg-green-500 hover:bg-green-600 " onClick={() => setDialogOpen(true)}>
                                         Tambah Kacamata
                                     </Button>
                                 </DialogTrigger>
@@ -48,7 +49,10 @@ const Index = ({ auth, error, kacamata }) => {
                                         </DialogDescription>
                                     </DialogHeader>
                                     <div id="form" className="">
-                                        <Form kacamata={kacamata} />
+                                        <Form 
+                                            kacamata={kacamata} 
+                                            onSuccess={() => setDialogOpen(false)}
+                                        />
                                     </div>
                                 </DialogContent>
                             </Dialog>
