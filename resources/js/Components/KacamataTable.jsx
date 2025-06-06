@@ -16,6 +16,8 @@ export default function KacamataTable({ data }) {
     {
       accessorKey: "id",
       header: "ID",
+      cell: ({ row }) =>
+        `${row.original.laci_relasi?.laci ?? ""} - ${row.original.newid ?? ""}`,
     },
     {
       accessorKey: "tipe",

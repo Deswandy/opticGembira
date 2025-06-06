@@ -8,6 +8,7 @@ use App\Models\MsMerk;
 use App\Models\MsKacamataStatus;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Illuminate\Support\Str;
 
 class MsKacamataController extends Controller
 {
@@ -34,6 +35,12 @@ class MsKacamataController extends Controller
             $path = $request->file('foto')->store('kacamata', 'public'); // stored in storage/app/public/kacamata
             $validated['foto'] = $path;
         }
+
+        do {
+            $newid = strtoupper(Str::random(3));
+        } while (MsKacamata::where('newid', $newid)->exists());
+
+        $validated['newid'] = $newid;
 
         $kacamata = MsKacamata::create($validated);
 
