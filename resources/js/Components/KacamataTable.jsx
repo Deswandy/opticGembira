@@ -97,38 +97,35 @@ export default function KacamataTable({ data }) {
               </TableRow>
             ))}
           </TableHeader>
-            <TableBody>
-              {table.getRowModel().rows.map(row => (
-                <TableRow key={row.id}>
-                  {row.getVisibleCells().map(cell => (
-                    <TableCell key={cell.id} className="truncate px-4 py-2 min-w-[120px]">
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))}
+          <TableBody>
+            {table.getRowModel().rows.map(row => (
+              <TableRow key={row.id}>
+                {row.getVisibleCells().map(cell => (
+                  <TableCell key={cell.id} className="truncate px-4 py-2 min-w-[120px]">
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </TableCell>
+                ))}
+              </TableRow>
+            ))}
 
-              {/* Pad empty rows if less than pageSize */}
-              {Array.from({
-                length: pagination.pageSize - table.getRowModel().rows.length,
-              }).map((_, idx) => (
-                <TableRow key={`empty-${idx}`}>
-                  {columns.map((_, colIdx) => (
-                    <TableCell
-                      key={`empty-cell-${idx}-${colIdx}`}
-                      className="px-4 py-2 min-w-[120px] text-muted-foreground"
-                    >
-                      {/* Optional: Add a non-breaking space or leave empty */}
-                      &nbsp;
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))}
-            </TableBody>
-
+            {/* Pad empty rows if less than pageSize */}
+            {Array.from({
+              length: pagination.pageSize - table.getRowModel().rows.length,
+            }).map((_, idx) => (
+              <TableRow key={`empty-${idx}`}>
+                {columns.map((_, colIdx) => (
+                  <TableCell
+                    key={`empty-cell-${idx}-${colIdx}`}
+                    className="px-4 py-2 min-w-[120px] text-muted-foreground"
+                  >
+                    &nbsp;
+                  </TableCell>
+                ))}
+              </TableRow>
+            ))}
+          </TableBody>
         </Table>
       </div>
-
 
       <div className="w-full flex justify-end">
         <Pagination>
@@ -138,7 +135,7 @@ export default function KacamataTable({ data }) {
                 href="#"
                 onClick={e => {
                   e.preventDefault()
-                  table.previousPage()
+                  if (table.getCanPreviousPage()) table.previousPage()
                 }}
                 disabled={!table.getCanPreviousPage()}
               />
@@ -146,13 +143,11 @@ export default function KacamataTable({ data }) {
 
             {(() => {
               const maxVisiblePages = 5
-              const totalPages = pageCount
-              const current = currentPage
-              let startPage = Math.max(current - Math.floor(maxVisiblePages / 2), 1)
+              let startPage = Math.max(currentPage - Math.floor(maxVisiblePages / 2), 1)
               let endPage = startPage + maxVisiblePages - 1
 
-              if (endPage > totalPages) {
-                endPage = totalPages
+              if (endPage > pageCount) {
+                endPage = pageCount
                 startPage = Math.max(endPage - maxVisiblePages + 1, 1)
               }
 
@@ -165,7 +160,7 @@ export default function KacamataTable({ data }) {
                 <PaginationItem key={page}>
                   <PaginationLink
                     href="#"
-                    isActive={page === current}
+                    isActive={page === currentPage}
                     onClick={e => {
                       e.preventDefault()
                       table.setPageIndex(page - 1)
@@ -182,7 +177,7 @@ export default function KacamataTable({ data }) {
                 href="#"
                 onClick={e => {
                   e.preventDefault()
-                  table.nextPage()
+                  if (table.getCanNextPage()) table.nextPage()
                 }}
                 disabled={!table.getCanNextPage()}
               />
