@@ -1,3 +1,5 @@
+"use client"
+
 import {
   Pagination,
   PaginationContent,
@@ -23,59 +25,70 @@ import {
   flexRender,
   getPaginationRowModel,
 } from "@tanstack/react-table"
-import React from "react"
+import React, { useState, useMemo } from "react"
 
 export default function KacamataTable({ data }) {
-  const columns = [
-    {
-      accessorKey: "id",
-      header: "ID",
-      cell: ({ row }) =>
-        `${row.original.laci_relasi?.laci ?? ""} - ${row.original.newid ?? ""}`,
-    },
-    { accessorKey: "tipe", header: "Tipe" },
-    { accessorKey: "bahan", header: "Bahan" },
-    {
-      accessorKey: "merk",
-      header: "Merk",
-      cell: ({ row }) => row.original.merk_relasi?.merk ?? "-",
-    },
-    {
-      accessorKey: "laci",
-      header: "Laci",
-      cell: ({ row }) => row.original.laci_relasi?.laci ?? "-",
-    },
-    {
-      accessorKey: "status",
-      header: "Status",
-      cell: ({ row }) => row.original.status_relasi?.status ?? "-",
-    },
-    {
-      accessorKey: "created_at",
-      header: "Dibuat",
-      cell: ({ getValue }) => new Date(getValue()).toLocaleDateString(),
-    },
-  ]
+  const [pagination, setPagination] = useState({
+    pageIndex: 0,
+    pageSize: 10,
+  })
+
+  const columns = useMemo(
+    () => [
+      {
+        accessorKey: "id",
+        header: "ID",
+        cell: ({ row }) =>
+          `${row.original.laci_relasi?.laci ?? ""} - ${row.original.newid ?? ""}`,
+      },
+      { accessorKey: "tipe", header: "Tipe" },
+      { accessorKey: "bahan", header: "Bahan" },
+      {
+        accessorKey: "merk",
+        header: "Merk",
+        cell: ({ row }) => row.original.merk_relasi?.merk ?? "-",
+      },
+      {
+        accessorKey: "laci",
+        header: "Laci",
+        cell: ({ row }) => row.original.laci_relasi?.laci ?? "-",
+      },
+      {
+        accessorKey: "status",
+        header: "Status",
+        cell: ({ row }) => row.original.status_relasi?.status ?? "-",
+      },
+      {
+        accessorKey: "created_at",
+        header: "Dibuat",
+        cell: ({ getValue }) => new Date(getValue()).toLocaleDateString(),
+      },
+    ],
+    []
+  )
 
   const table = useReactTable({
     data,
     columns,
+    state: { pagination },
+    onPaginationChange: setPagination,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
+    manualPagination: false,
   })
 
-  const pageCount = table.getPageCount()
   const currentPage = table.getState().pagination.pageIndex + 1
+  const pageCount = table.getPageCount()
 
   return (
-    <div className="space-y-4 overflow-x-auto">
-      <div className="rounded-md border w-full max-w-[1200px] mx-auto">
-        <Table className="w-full table-fixed">
+    <div className="space-y-6 w-full">
+      <div className="w-full overflow-x-auto rounded-md border">
+        <Table className="w-full table-fixed min-w-[800px]">
           <TableHeader>
             {table.getHeaderGroups().map(headerGroup => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map(header => (
-                  <TableHead key={header.id} className="truncate">
+                  <TableHead key={header.id} className="truncate px-4 py-2 min-w-[120px]">
                     {header.isPlaceholder
                       ? null
                       : flexRender(header.column.columnDef.header, header.getContext())}
@@ -84,24 +97,42 @@ export default function KacamataTable({ data }) {
               </TableRow>
             ))}
           </TableHeader>
-          <TableBody>
-            {table.getRowModel().rows.map(row => (
-              <TableRow key={row.id}>
-                {row.getVisibleCells().map(cell => (
-                  <TableCell key={cell.id} className="truncate">
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </TableCell>
-                ))}
-              </TableRow>
-            ))}
-          </TableBody>
+            <TableBody>
+              {table.getRowModel().rows.map(row => (
+                <TableRow key={row.id}>
+                  {row.getVisibleCells().map(cell => (
+                    <TableCell key={cell.id} className="truncate px-4 py-2 min-w-[120px]">
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))}
+
+              {/* Pad empty rows if less than pageSize */}
+              {Array.from({
+                length: pagination.pageSize - table.getRowModel().rows.length,
+              }).map((_, idx) => (
+                <TableRow key={`empty-${idx}`}>
+                  {columns.map((_, colIdx) => (
+                    <TableCell
+                      key={`empty-cell-${idx}-${colIdx}`}
+                      className="px-4 py-2 min-w-[120px] text-muted-foreground"
+                    >
+                      {/* Optional: Add a non-breaking space or leave empty */}
+                      &nbsp;
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))}
+            </TableBody>
+
         </Table>
       </div>
 
-      {/* Pagination */}
-      <div className="flex justify-center">
+
+      <div className="w-full flex justify-end">
         <Pagination>
-          <PaginationContent className="transition-all duration-200 ease-in-out">
+          <PaginationContent>
             <PaginationItem>
               <PaginationPrevious
                 href="#"
@@ -113,36 +144,28 @@ export default function KacamataTable({ data }) {
               />
             </PaginationItem>
 
-            {currentPage > 2 && (
-              <>
-                <PaginationItem>
-                  <PaginationLink
-                    href="#"
-                    onClick={e => {
-                      e.preventDefault()
-                      table.setPageIndex(0)
-                    }}
-                  >
-                    1
-                  </PaginationLink>
-                </PaginationItem>
-                {currentPage > 3 && (
-                  <PaginationItem>
-                    <PaginationEllipsis />
-                  </PaginationItem>
-                )}
-              </>
-            )}
+            {(() => {
+              const maxVisiblePages = 5
+              const totalPages = pageCount
+              const current = currentPage
+              let startPage = Math.max(current - Math.floor(maxVisiblePages / 2), 1)
+              let endPage = startPage + maxVisiblePages - 1
 
-            {/* Current, Previous, Next */}
-            {[...Array(3)].map((_, i) => {
-              const page = currentPage - 2 + i
-              if (page < 1 || page > pageCount) return null
-              return (
+              if (endPage > totalPages) {
+                endPage = totalPages
+                startPage = Math.max(endPage - maxVisiblePages + 1, 1)
+              }
+
+              const pageNumbers = []
+              for (let i = startPage; i <= endPage; i++) {
+                pageNumbers.push(i)
+              }
+
+              return pageNumbers.map(page => (
                 <PaginationItem key={page}>
                   <PaginationLink
                     href="#"
-                    isActive={page === currentPage}
+                    isActive={page === current}
                     onClick={e => {
                       e.preventDefault()
                       table.setPageIndex(page - 1)
@@ -151,29 +174,8 @@ export default function KacamataTable({ data }) {
                     {page}
                   </PaginationLink>
                 </PaginationItem>
-              )
-            })}
-
-            {currentPage < pageCount - 1 && (
-              <>
-                {currentPage < pageCount - 2 && (
-                  <PaginationItem>
-                    <PaginationEllipsis />
-                  </PaginationItem>
-                )}
-                <PaginationItem>
-                  <PaginationLink
-                    href="#"
-                    onClick={e => {
-                      e.preventDefault()
-                      table.setPageIndex(pageCount - 1)
-                    }}
-                  >
-                    {pageCount}
-                  </PaginationLink>
-                </PaginationItem>
-              </>
-            )}
+              ))
+            })()}
 
             <PaginationItem>
               <PaginationNext
