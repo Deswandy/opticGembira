@@ -69,7 +69,7 @@ class MsKacamataController extends Controller
 
         $kacamata->update($request->all());
 
-        return response()->json($kacamata);
+        return to_route('ms-kacamatas.index');
     }
 
     public function destroy($id)

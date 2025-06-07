@@ -10,6 +10,15 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination"
 import { MdDeleteForever, MdEdit } from "react-icons/md";
+import EditForm from "@/Pages/Kacamata/EditForm";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "@/components/ui/dialog";
 import {
   Table,
   TableBody,
@@ -35,18 +44,19 @@ export default function KacamataTable({ data }) {
     pageIndex: 0,
     pageSize: 10,
   })
+  const [editDialogOpenId, setEditDialogOpenId] = useState(null);
 
   const columns = useMemo(
     () => [
       {
         accessorKey: "id",
         header: "ID",
-        cell: ({ row }) =>(
+        cell: ({ row }) => (
           <div className="flex flex-row gap-1">
             <Badge className="px-1 bg-slate-600">
               {`${row.original.laci_relasi?.laci ?? ""}`}
             </Badge>
-              {row.original.newid ?? ""}
+            {row.original.newid ?? ""}
           </div>
         )
       },
@@ -75,13 +85,27 @@ export default function KacamataTable({ data }) {
       {
         id: "actions",
         header: "Aksi",
-        cell: ({row}) => (
+        cell: ({ row }) => (
           <div className="flex flex-row gap-2">
-            <Button className="bg-orange-400 hover:bg-orange-500 p-2">
-              <MdEdit/>
-            </Button>
+<Dialog>
+  <DialogTrigger asChild>
+    <Button className="bg-orange-400 hover:bg-orange-500 p-2">
+      <MdEdit />
+    </Button>
+  </DialogTrigger>
+<DialogContent>
+  <DialogHeader>
+    <DialogTitle>Edit Kacamata</DialogTitle>
+    <DialogDescription>Edit data kacamata yang dipilih</DialogDescription>
+  </DialogHeader>
+  <EditForm item={row.original} kacamata={data} onSuccess={() => setDialogOpen(false)} />
+</DialogContent>
+
+</Dialog>
+
+
             <Button variant="destructive" className="p-2">
-              <MdDeleteForever/>
+              <MdDeleteForever />
             </Button>
           </div>
         )
