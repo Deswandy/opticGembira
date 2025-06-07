@@ -31,6 +31,12 @@ export default function Authenticated({ auth, header, children }) {
                                 <NavLink className='text-white' href={route('ms-kacamatas.index')} active={route().current('dashboard')}>
                                     Kacamata
                                 </NavLink>
+                                <NavLink className='text-white' href={route('ms-lacis.index')} active={route().current('dashboard')}>
+                                    Laci
+                                </NavLink>
+                                <NavLink className='text-white' href={route('ms-merks.index')} active={route().current('dashboard')}>
+                                    Merk
+                                </NavLink>
                             </div>
                         </div>
 
