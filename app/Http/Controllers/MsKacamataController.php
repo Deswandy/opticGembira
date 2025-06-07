@@ -77,6 +77,6 @@ class MsKacamataController extends Controller
         $kacamata = MsKacamata::findOrFail($id);
         $kacamata->delete();
 
-        return response()->json(['message' => 'Deleted successfully']);
+        return to_route('ms-kacamatas.index');
     }
 }
