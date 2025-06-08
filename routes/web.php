@@ -42,6 +42,8 @@ Route::middleware(['auth','verified'])->group(function () {
     Route::resource('ms-lacis', MsLaciController::class);
     Route::resource('ms-kacamata-statuses', MsKacamataStatusController::class);
     Route::resource('ms-kacamata-status-logs', MsKacamataStatusLogController::class);
+    Route::post('/ms-laci', [MsLaciController::class, 'store'])->name('ms-laci.store');
+
 });
 
 require __DIR__.'/auth.php';

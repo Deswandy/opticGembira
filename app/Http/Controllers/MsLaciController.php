@@ -1,30 +1,47 @@
 <?php
+
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\MsLaci;
+use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class MsLaciController extends Controller
 {
-    public function index() { return response()->json(MsLaci::all()); }
+    public function index()
+
+    {
+        $lacis = MsLaci::select('id', 'laci',  'created_at', 'updated_at')->get();
+
+        return Inertia::render('Laci/Index', [
+            'lacis' => $lacis, // ✅ DI SINI YANG PENTING
+        ]);
+    }
 
     public function store(Request $request)
     {
-        $request->validate(['laci' => 'required|string|max:3']);
-        $laci = MsLaci::create($request->all());
-        return response()->json($laci);
+        $validated = $request->validate([
+            'laci' => 'required|string|max:255|unique:ms_lacis,laci',
+        ]);
+
+        MsLaci::create($validated);
+
+        return to_route('ms-lacis.index');
     }
+
 
     public function update(Request $request, $id)
     {
         $laci = MsLaci::findOrFail($id);
-        $laci->update($request->all());
-        return response()->json($laci);
+
+        $validated = $request->validate([
+            'laci' => 'required|string|max:255|unique:ms_lacis,laci,' . $laci->id,
+            'keterangan' => 'nullable|string|max:255'
+        ]);
+
+        $laci->update($validated);
+
+        return to_route('ms-lacis.index');
     }
 
-    public function destroy($id)
-    {
-        MsLaci::findOrFail($id)->delete();
-        return response()->json(['message' => 'Deleted']);
-    }
 }
