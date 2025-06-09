@@ -10,6 +10,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
+use Spatie\Activitylog\Models\Activity; // <-- 1. TAMBAHKAN IMPORT INI
+
 
 class MsKacamataController extends Controller
 {
@@ -108,5 +110,14 @@ class MsKacamataController extends Controller
         $kacamata->delete();
 
         return to_route('ms-kacamatas.index');
+    }
+      public function showLogs(MsKacamata $ms_kacamata)
+    {
+        $logs = Activity::forSubject($ms_kacamata)
+                        ->with('causer') // 'causer' adalah relasi ke model User
+                        ->latest()
+                        ->get();
+
+        return response()->json($logs);
     }
 }
