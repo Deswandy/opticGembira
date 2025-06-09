@@ -3,23 +3,41 @@
 namespace App\Http\Controllers;
 
 use App\Models\MsKacamata;
-use App\Models\MsLaci;
-use App\Models\MsMerk;
-use App\Models\MsKacamataStatus;
+use App\Models\MsLaci;           // <-- TAMBAHKAN: Import model Laci
+use App\Models\MsMerk;          // <-- TAMBAHKAN: Import model Merk
+use App\Models\MsKacamataStatus; // <-- TAMBAHKAN: Import model Status
 use Illuminate\Http\Request;
-use Inertia\Inertia;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Inertia\Inertia;
 
 class MsKacamataController extends Controller
 {
+    /**
+     * Menampilkan halaman utama dan mengirimkan semua data yang diperlukan.
+     */
     public function index()
     {
-        $kacamatas = MsKacamata::with(['merkRelasi', 'laciRelasi', 'statusRelasi'])->get();
+        // Ambil semua data master untuk form dropdown.
+        // Diurutkan berdasarkan abjad untuk pengalaman pengguna yang lebih baik.
+        $masterLacis = MsLaci::orderBy('laci')->get();
+        $masterMerks = MsMerk::orderBy('merk')->get();
+        $masterStatuses = MsKacamataStatus::all();
+
+        // Ambil data kacamata untuk ditampilkan di tabel utama.
+        $kacamatas = MsKacamata::with(['merkRelasi', 'laciRelasi', 'statusRelasi'])->latest()->get();
+
+        // Kirim semua data ke komponen Inertia/React.
         return Inertia::render('Kacamata/Index', [
-            'kacamata' => $kacamatas
+            'kacamata' => $kacamatas,
+            'masterLacis' => $masterLacis,         // Prop baru untuk daftar laci lengkap
+            'masterMerks' => $masterMerks,         // Prop baru untuk daftar merk lengkap
+            'masterStatuses' => $masterStatuses,   // Prop baru untuk daftar status lengkap
         ]);
     }
-
+    /**
+     * Menyimpan data kacamata baru.
+     */
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -28,11 +46,11 @@ class MsKacamataController extends Controller
             'ms_kacamata_statuses_id' => 'required|exists:ms_kacamata_statuses,id',
             'tipe' => 'required|string|max:255',
             'bahan' => 'required|string|max:255',
-            'foto' => 'nullable|image|mimes:jpg,jpeg,png|max:2048', // validate file
+            'foto' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
         if ($request->hasFile('foto')) {
-            $path = $request->file('foto')->store('kacamata', 'public'); // stored in storage/app/public/kacamata
+            $path = $request->file('foto')->store('kacamata', 'public');
             $validated['foto'] = $path;
         }
 
@@ -42,39 +60,51 @@ class MsKacamataController extends Controller
 
         $validated['newid'] = $newid;
 
-        $kacamata = MsKacamata::create($validated);
+        MsKacamata::create($validated);
 
         return to_route('ms-kacamatas.index');
     }
 
-
-    public function show($id)
-    {
-        $kacamata = MsKacamata::with(['merk', 'laci', 'status'])->findOrFail($id);
-        return response()->json($kacamata);
-    }
-
+    /**
+     * Memperbarui data kacamata yang ada.
+     */
     public function update(Request $request, $id)
     {
         $kacamata = MsKacamata::findOrFail($id);
 
-        $request->validate([
+        $validated = $request->validate([
             'ms_merks_id' => 'required|exists:ms_merks,id',
             'ms_lacis_id' => 'required|exists:ms_lacis,id',
             'ms_kacamata_statuses_id' => 'required|exists:ms_kacamata_statuses,id',
-            'tipe' => 'required|string',
-            'bahan' => 'required|string',
-            'foto' => 'nullable|string',
+            'tipe' => 'required|string|max:255',
+            'bahan' => 'required|string|max:255',
+            'foto' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
-        $kacamata->update($request->all());
+        if ($request->hasFile('foto')) {
+            if ($kacamata->foto) {
+                Storage::disk('public')->delete($kacamata->foto);
+            }
+            $path = $request->file('foto')->store('kacamata', 'public');
+            $validated['foto'] = $path;
+        }
+
+        $kacamata->update($validated);
 
         return to_route('ms-kacamatas.index');
     }
 
+    /**
+     * Menghapus data kacamata.
+     */
     public function destroy($id)
     {
         $kacamata = MsKacamata::findOrFail($id);
+
+        if ($kacamata->foto) {
+            Storage::disk('public')->delete($kacamata->foto);
+        }
+
         $kacamata->delete();
 
         return to_route('ms-kacamatas.index');

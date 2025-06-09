@@ -1,17 +1,19 @@
 "use client";
 
+import React, { useState, useMemo } from "react";
 import {
-    Pagination,
-    PaginationContent,
-    PaginationEllipsis,
-    PaginationItem,
-    PaginationLink,
-    PaginationNext,
-    PaginationPrevious,
-} from "@/components/ui/pagination";
-import { MdDeleteForever, MdEdit } from "react-icons/md";
-import EditForm from "@/Pages/Kacamata/EditForm";
+    useReactTable,
+    getCoreRowModel,
+    flexRender,
+    getPaginationRowModel,
+} from "@tanstack/react-table";
 import { router } from "@inertiajs/react";
+import { MdDeleteForever, MdEdit } from "react-icons/md";
+
+// Import komponen UI
+import { Button } from "./ui/button";
+import { Badge } from "./ui/badge";
+import EditForm from "@/Pages/Kacamata/EditForm";
 import {
     Dialog,
     DialogContent,
@@ -28,25 +30,21 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-
-import { Badge } from "./ui/badge";
-
 import {
-    useReactTable,
-    getCoreRowModel,
-    flexRender,
-    getPaginationRowModel,
-} from "@tanstack/react-table";
-import { Button } from "./ui/button";
-import React, { useState, useMemo } from "react";
-import { useForm } from "@inertiajs/react";
+    Pagination,
+    PaginationContent,
+    PaginationItem,
+    PaginationLink,
+    PaginationNext,
+    PaginationPrevious,
+} from "@/components/ui/pagination";
+
 
 export default function KacamataTable({ data }) {
     const [pagination, setPagination] = useState({
         pageIndex: 0,
         pageSize: 10,
     });
-    const [editDialogOpenId, setEditDialogOpenId] = useState(null);
 
     const columns = useMemo(
         () => [
@@ -69,11 +67,6 @@ export default function KacamataTable({ data }) {
                 header: "Merk",
                 cell: ({ row }) => row.original.merk_relasi?.merk ?? "-",
             },
-            // {
-            //   accessorKey: "laci",
-            //   header: "Laci",
-            //   cell: ({ row }) => row.original.laci_relasi?.laci ?? "-",
-            // },
             {
                 accessorKey: "status",
                 header: "Status",
@@ -83,24 +76,27 @@ export default function KacamataTable({ data }) {
                 accessorKey: "created_at",
                 header: "Dibuat",
                 cell: ({ getValue }) =>
-                    new Date(getValue()).toLocaleDateString(),
+                    new Date(getValue()).toLocaleDateString("id-ID"),
             },
             {
                 id: "actions",
                 header: "Aksi",
                 cell: ({ row }) => {
-                    const [deleteDialogOpen, setDeleteDialogOpen] =
-                        useState(false);
-                    const handleDelete = async () => {
-                        router.delete(`ms-kacamatas/${row.original.id}`, {
+                    // **STATE MANAGEMENT DIALOG DIPERBAIKI**
+                    const [editDialogOpen, setEditDialogOpen] = useState(false);
+                    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+
+                    const handleDelete = () => {
+                        router.delete(route('ms-kacamatas.destroy', row.original.id), {
                             onSuccess: () => setDeleteDialogOpen(false),
+                            preserveScroll: true,
                         });
                     };
 
                     return (
                         <div className="flex flex-row gap-2">
-                            {/* Edit Dialog */}
-                            <Dialog>
+                            {/* --- Dialog Edit --- */}
+                            <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
                                 <DialogTrigger asChild>
                                     <Button className="bg-orange-400 hover:bg-orange-500 p-2">
                                         <MdEdit />
@@ -116,40 +112,29 @@ export default function KacamataTable({ data }) {
                                     <EditForm
                                         item={row.original}
                                         kacamata={data}
-                                        onSuccess={() => setDialogOpen(false)}
+                                        onSuccess={() => setEditDialogOpen(false)}
                                     />
                                 </DialogContent>
                             </Dialog>
 
-                            {/* Delete Confirmation Dialog */}
-                            <Dialog
-                                open={deleteDialogOpen}
-                                onOpenChange={setDeleteDialogOpen}
-                            >
+                            {/* --- Dialog Hapus --- */}
+                            <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
                                 <DialogTrigger asChild>
-                                    <Button
-                                        variant="destructive"
-                                        className="p-2"
-                                    >
+                                    <Button variant="destructive" className="p-2">
                                         <MdDeleteForever />
                                     </Button>
                                 </DialogTrigger>
                                 <DialogContent>
                                     <DialogHeader>
-                                        <DialogTitle>
-                                            Konfirmasi Hapus
-                                        </DialogTitle>
+                                        <DialogTitle>Konfirmasi Hapus</DialogTitle>
                                         <DialogDescription>
-                                            Apakah Anda yakin ingin menghapus
-                                            data ini?
+                                            Apakah Anda yakin ingin menghapus data ini? Tindakan ini tidak dapat dibatalkan.
                                         </DialogDescription>
                                     </DialogHeader>
                                     <div className="flex justify-end gap-2 mt-4">
                                         <Button
                                             variant="outline"
-                                            onClick={() =>
-                                                setDeleteDialogOpen(false)
-                                            }
+                                            onClick={() => setDeleteDialogOpen(false)}
                                         >
                                             Batal
                                         </Button>
@@ -167,7 +152,7 @@ export default function KacamataTable({ data }) {
                 },
             },
         ],
-        []
+        [data] // Dependensi ditambahkan agar re-render jika data berubah
     );
 
     const table = useReactTable({
@@ -177,141 +162,99 @@ export default function KacamataTable({ data }) {
         onPaginationChange: setPagination,
         getCoreRowModel: getCoreRowModel(),
         getPaginationRowModel: getPaginationRowModel(),
-        manualPagination: false,
     });
 
     const currentPage = table.getState().pagination.pageIndex + 1;
     const pageCount = table.getPageCount();
 
+    // Logika untuk menampilkan nomor halaman paginasi
+    const renderPageNumbers = () => {
+        const pageNumbers = [];
+        const maxPagesToShow = 5;
+        const ellipsis = <PaginationItem key="ellipsis"><span className="px-3 py-1">...</span></PaginationItem>;
+
+        if (pageCount <= maxPagesToShow + 2) {
+            for (let i = 1; i <= pageCount; i++) {
+                pageNumbers.push(i);
+            }
+        } else {
+            if (currentPage <= maxPagesToShow - 1) {
+                for (let i = 1; i <= maxPagesToShow; i++) pageNumbers.push(i);
+                pageNumbers.push('ellipsis');
+                pageNumbers.push(pageCount);
+            } else if (currentPage >= pageCount - (maxPagesToShow - 2)) {
+                pageNumbers.push(1);
+                pageNumbers.push('ellipsis');
+                for (let i = pageCount - (maxPagesToShow - 1); i <= pageCount; i++) pageNumbers.push(i);
+            } else {
+                pageNumbers.push(1);
+                pageNumbers.push('ellipsis');
+                for (let i = currentPage - 1; i <= currentPage + 1; i++) pageNumbers.push(i);
+                pageNumbers.push('ellipsis');
+                pageNumbers.push(pageCount);
+            }
+        }
+
+        return pageNumbers.map((page, index) =>
+            page === 'ellipsis' ?
+            <PaginationItem key={`${page}-${index}`}><PaginationEllipsis /></PaginationItem> :
+            <PaginationItem key={page}>
+                <PaginationLink
+                    href="#"
+                    isActive={page === currentPage}
+                    onClick={(e) => { e.preventDefault(); table.setPageIndex(page - 1); }}
+                >
+                    {page}
+                </PaginationLink>
+            </PaginationItem>
+        );
+    };
+
     return (
-        <div className="space-y-6 w-full">
-            <div className="w-full overflow-x-auto rounded-md border">
-                <Table className="w-full table-fixed min-w-[800px]">
-                    <TableHeader className="bg-blue-50">
+        <div className="space-y-4 w-full">
+            <div className="rounded-md border">
+                <Table>
+                    <TableHeader>
                         {table.getHeaderGroups().map((headerGroup) => (
                             <TableRow key={headerGroup.id}>
                                 {headerGroup.headers.map((header) => (
-                                    <TableHead
-                                        key={header.id}
-                                        className="truncate px-4 py-2 min-w-[120px]"
-                                    >
-                                        {header.isPlaceholder
-                                            ? null
-                                            : flexRender(
-                                                  header.column.columnDef
-                                                      .header,
-                                                  header.getContext()
-                                              )}
+                                    <TableHead key={header.id}>
+                                        {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
                                     </TableHead>
                                 ))}
                             </TableRow>
                         ))}
                     </TableHeader>
                     <TableBody>
-                        {table.getRowModel().rows.map((row) => (
-                            <TableRow
-                                key={row.id}
-                                className="odd:bg-white even:bg-slate-50 hover:bg-slate-100 transition-colors"
-                            >
-                                {row.getVisibleCells().map((cell) => (
-                                    <TableCell
-                                        key={cell.id}
-                                        className="truncate px-4 py-2 min-w-[120px]"
-                                    >
-                                        {flexRender(
-                                            cell.column.columnDef.cell,
-                                            cell.getContext()
-                                        )}
-                                    </TableCell>
-                                ))}
+                        {table.getRowModel().rows?.length ? (
+                            table.getRowModel().rows.map((row) => (
+                                <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
+                                    {row.getVisibleCells().map((cell) => (
+                                        <TableCell key={cell.id}>
+                                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                                        </TableCell>
+                                    ))}
+                                </TableRow>
+                            ))
+                        ) : (
+                            <TableRow>
+                                <TableCell colSpan={columns.length} className="h-24 text-center">
+                                    No results.
+                                </TableCell>
                             </TableRow>
-                        ))}
-
-                        {Array.from({
-                            length:
-                                pagination.pageSize -
-                                table.getRowModel().rows.length,
-                        }).map((_, idx) => (
-                            <TableRow
-                                key={`empty-${idx}`}
-                                className="odd:bg-white even:bg-slate-100 hover:bg-slate-200 transition-colors"
-                            >
-                                {columns.map((_, colIdx) => (
-                                    <TableCell
-                                        key={`empty-cell-${idx}-${colIdx}`}
-                                        className="px-4 py-2 min-w-[120px] text-muted-foreground"
-                                    >
-                                        &nbsp;
-                                    </TableCell>
-                                ))}
-                            </TableRow>
-                        ))}
+                        )}
                     </TableBody>
                 </Table>
             </div>
-
-            <div className="w-full flex justify-end">
+            <div className="flex items-center justify-end space-x-2 py-4">
                 <Pagination>
                     <PaginationContent>
                         <PaginationItem>
-                            <PaginationPrevious
-                                href="#"
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                    if (table.getCanPreviousPage())
-                                        table.previousPage();
-                                }}
-                                disabled={!table.getCanPreviousPage()}
-                            />
+                            <PaginationPrevious href="#" onClick={(e) => { e.preventDefault(); table.previousPage(); }} disabled={!table.getCanPreviousPage()} />
                         </PaginationItem>
-
-                        {(() => {
-                            const maxVisiblePages = 5;
-                            let startPage = Math.max(
-                                currentPage - Math.floor(maxVisiblePages / 2),
-                                1
-                            );
-                            let endPage = startPage + maxVisiblePages - 1;
-
-                            if (endPage > pageCount) {
-                                endPage = pageCount;
-                                startPage = Math.max(
-                                    endPage - maxVisiblePages + 1,
-                                    1
-                                );
-                            }
-
-                            const pageNumbers = [];
-                            for (let i = startPage; i <= endPage; i++) {
-                                pageNumbers.push(i);
-                            }
-
-                            return pageNumbers.map((page) => (
-                                <PaginationItem key={page}>
-                                    <PaginationLink
-                                        href="#"
-                                        isActive={page === currentPage}
-                                        onClick={(e) => {
-                                            e.preventDefault();
-                                            table.setPageIndex(page - 1);
-                                        }}
-                                    >
-                                        {page}
-                                    </PaginationLink>
-                                </PaginationItem>
-                            ));
-                        })()}
-
+                        {renderPageNumbers()}
                         <PaginationItem>
-                            <PaginationNext
-                                href="#"
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                    if (table.getCanNextPage())
-                                        table.nextPage();
-                                }}
-                                disabled={!table.getCanNextPage()}
-                            />
+                            <PaginationNext href="#" onClick={(e) => { e.preventDefault(); table.nextPage(); }} disabled={!table.getCanNextPage()} />
                         </PaginationItem>
                     </PaginationContent>
                 </Pagination>

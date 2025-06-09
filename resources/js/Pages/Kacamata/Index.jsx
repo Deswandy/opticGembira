@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import Form from "./Form";
 
-const Index = ({ auth, error, kacamata }) => {
+const Index = ({ auth, error, kacamata, masterLacis, masterMerks, masterStatuses, }) => {
     console.log(kacamata);
     const [dialogOpen, setDialogOpen] = useState(false);
 
