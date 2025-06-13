@@ -27,7 +27,13 @@ class MsKacamataController extends Controller
         $masterStatuses = MsKacamataStatus::all();
 
         // Ambil data kacamata untuk ditampilkan di tabel utama.
-        $kacamatas = MsKacamata::with(['merkRelasi', 'laciRelasi', 'statusRelasi'])->latest()->get();
+$kacamatas = MsKacamata::with(['merkRelasi', 'laciRelasi', 'statusRelasi'])->latest()->get()
+    ->map(function ($item) {
+        return [
+            ...$item->toArray(),
+            'foto_url' => $item->foto ? Storage::url($item->foto) : null,
+        ];
+    });
 
         // Kirim semua data ke komponen Inertia/React.
         return Inertia::render('Kacamata/Index', [
@@ -104,7 +110,6 @@ class MsKacamataController extends Controller
             : $kacamata->foto,
     ]);
 
-    // ✅ Log status change if it changed
     if ($oldStatusId != $request->ms_kacamata_statuses_id) {
         \App\Models\MsKacamataStatusLog::create([
             'ms_kacamatas_id' => $kacamata->id,

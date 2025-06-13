@@ -317,6 +317,15 @@ export default function KacamataTable({ data }) {
                         </DialogDescription>
                     </DialogHeader>
                     <div className="mt-4 space-y-2 max-h-96 overflow-y-auto">
+                                    {logItem?.foto && (
+                <div className="mb-1 flex justify-center">
+                    <img
+                        src={`/storage/${logItem.foto}`}
+                        alt="Foto kacamata"
+                        className="rounded-md max-h-64 object-contain border"
+                    />
+                </div>
+            )}
                         {logs.length > 0 ? (
                             <table className="w-full text-sm">
                                 <thead>
