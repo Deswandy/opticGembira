@@ -62,7 +62,15 @@ class MsKacamataController extends Controller
 
         $validated['newid'] = $newid;
 
-        MsKacamata::create($validated);
+        $kacamata = MsKacamata::create($validated);
+
+        // Create initial status log
+        \App\Models\MsKacamataStatusLog::create([
+            'ms_kacamatas_id' => $kacamata->id,
+            'ms_kacamata_statuses_id' => $kacamata->ms_kacamata_statuses_id,
+            'user_id' => auth()->id() ?? 1,
+        ]);
+
 
         return to_route('ms-kacamatas.index');
     }
