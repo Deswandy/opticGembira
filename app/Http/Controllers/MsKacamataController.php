@@ -71,30 +71,43 @@ class MsKacamataController extends Controller
      * Memperbarui data kacamata yang ada.
      */
     public function update(Request $request, $id)
-    {
-        $kacamata = MsKacamata::findOrFail($id);
+{
+    $request->validate([
+        'tipe' => 'required|string',
+        'bahan' => 'required|string',
+        'ms_lacis_id' => 'required|exists:ms_lacis,id',
+        'ms_merks_id' => 'required|exists:ms_merks,id',
+        'ms_kacamata_statuses_id' => 'required|exists:ms_kacamata_statuses,id',
+        'foto' => 'nullable|image',
+    ]);
 
-        $validated = $request->validate([
-            'ms_merks_id' => 'required|exists:ms_merks,id',
-            'ms_lacis_id' => 'required|exists:ms_lacis,id',
-            'ms_kacamata_statuses_id' => 'required|exists:ms_kacamata_statuses,id',
-            'tipe' => 'required|string|max:255',
-            'bahan' => 'required|string|max:255',
-            'foto' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+    $kacamata = MsKacamata::findOrFail($id);
+
+    $oldStatusId = $kacamata->ms_kacamata_statuses_id;
+
+    $kacamata->update([
+        'tipe' => $request->tipe,
+        'bahan' => $request->bahan,
+        'ms_lacis_id' => $request->ms_lacis_id,
+        'ms_merks_id' => $request->ms_merks_id,
+        'ms_kacamata_statuses_id' => $request->ms_kacamata_statuses_id,
+        'foto' => $request->hasFile('foto') 
+            ? $request->file('foto')->store('kacamata_photos', 'public')
+            : $kacamata->foto,
+    ]);
+
+    // ✅ Log status change if it changed
+    if ($oldStatusId != $request->ms_kacamata_statuses_id) {
+        \App\Models\MsKacamataStatusLog::create([
+            'ms_kacamatas_id' => $kacamata->id,
+            'ms_kacamata_statuses_id' => $request->ms_kacamata_statuses_id,
+            'user_id' => auth()->id() ?? 1,
         ]);
-
-        if ($request->hasFile('foto')) {
-            if ($kacamata->foto) {
-                Storage::disk('public')->delete($kacamata->foto);
-            }
-            $path = $request->file('foto')->store('kacamata', 'public');
-            $validated['foto'] = $path;
-        }
-
-        $kacamata->update($validated);
-
-        return to_route('ms-kacamatas.index');
     }
+
+    return redirect()->route('ms-kacamatas.index')->with('success', 'Data berhasil diperbarui.');
+}
+
 
     /**
      * Menghapus data kacamata.
@@ -111,13 +124,51 @@ class MsKacamataController extends Controller
 
         return to_route('ms-kacamatas.index');
     }
-      public function showLogs(MsKacamata $ms_kacamata)
-    {
-        $logs = Activity::forSubject($ms_kacamata)
-                        ->with('causer') // 'causer' adalah relasi ke model User
-                        ->latest()
-                        ->get();
+public function showLogs($id)
+{
+    $kacamata = \App\Models\MsKacamata::findOrFail($id);
 
-        return response()->json($logs);
+    $logs = \App\Models\MsKacamataStatusLog::where('ms_kacamatas_id', $kacamata->id)
+                ->with(['status', 'user']) // These are now proper Eloquent relations
+                ->latest()
+                ->get()
+                ->map(function ($log) {
+                    return [
+                        'created_at' => $log->created_at,
+                        'status' => $log->status?->status ?? 'Tidak diketahui',
+                        'user' => $log->user?->name ?? 'Tidak diketahui',
+                    ];
+                });
+
+    return response()->json($logs);
+}
+
+
+    
+    // app/Http/Controllers/MsKacamataController.php
+
+public function updateStatus(Request $request, $id)
+{
+    $request->validate([
+        'ms_kacamata_statuses_id' => 'required|exists:ms_kacamata_statuses,id',
+    ]);
+
+    $kacamata = MsKacamata::findOrFail($id);
+
+    // Only log if status actually changed
+    if ($kacamata->ms_kacamata_statuses_id != $request->ms_kacamata_statuses_id) {
+        $kacamata->update([
+            'ms_kacamata_statuses_id' => $request->ms_kacamata_statuses_id,
+        ]);
+
+        MsKacamataStatusLog::create([
+            'ms_kacamatas_id' => $kacamata->id,
+            'ms_kacamata_statuses_id' => $request->ms_kacamata_statuses_id,
+            'user_id' => auth()->id() ?? 1,
+        ]);
     }
+
+    return back()->with('success', 'Status updated and logged');
+}
+
 }

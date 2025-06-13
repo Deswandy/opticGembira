@@ -13,9 +13,9 @@ public function run(): void
     // Buat user dummy
     User::factory()->create([
         'id' => 1,
-        'name' => 'Seeder Admin',
-        'email' => 'admin@example.com',
-        'password' => bcrypt('password'),
+        'name' => 'Optic Gembira',
+        'email' => 'opticgembira@gmail.com',
+        'password' => bcrypt('gembira8'),
     ]);
 
     // Panggil seeder lain

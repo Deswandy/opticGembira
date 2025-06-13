@@ -36,15 +36,15 @@ export default function LaciTable({ data }) {
 
     const columns = useMemo(
         () => [
-            {
-                accessorKey: "id",
-                header: "ID",
-                cell: ({ row }) => (
-                    <Badge className="bg-blue-600 px-2 py-0.5 rounded text-white">
-                        {row.original.id}
-                    </Badge>
-                ),
-            },
+            // {
+            //     accessorKey: "id",
+            //     header: "ID",
+            //     cell: ({ row }) => (
+            //         <Badge className="bg-blue-600 px-2 py-0.5 rounded text-white">
+            //             {row.original.id}
+            //         </Badge>
+            //     ),
+            // },
             {
                 accessorKey: "laci",
                 header: "Nama Laci",

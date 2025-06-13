@@ -77,7 +77,7 @@ const Form = ({ kacamata, onSuccess }) => {
           <TextInput id="bahan" name="bahan" value={data.bahan} onChange={handleOnChange} className="mt-1 block w-full" />
           <InputError message={errors.bahan} className="mt-2" />
         </div>
-      </div>
+    </div>
 
       <div>
         <InputLabel htmlFor="ms_lacis_id">Laci</InputLabel>

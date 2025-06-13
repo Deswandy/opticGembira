@@ -29,6 +29,9 @@ Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
+
+// Route::post('/ms-kacamatas/{id}/update-status', [MsKacamataController::class, 'updateStatus'])->name('ms-kacamatas.update-status');
+Route::get('/ms-kacamatas/{id}/logs', [MsKacamataController::class, 'showLogs'])->name('ms-kacamatas.logs');
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
@@ -46,4 +49,12 @@ Route::middleware(['auth','verified'])->group(function () {
     
 });
 
+
+
 require __DIR__.'/auth.php';
+Route::match(['get', 'post'], '/register', function () {
+    abort(404); // or return Inertia::render('Blocked');
+});
+Route::match(['get', 'post'], '/forgot-password', function () {
+    abort(404); // or return Inertia::render('Blocked');
+});

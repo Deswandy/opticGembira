@@ -23,40 +23,45 @@ const Index = ({ auth, error, lacis }) => {
             auth={auth}
             error={error}
             header={
-                <h2 className="font-semibold text-xl text-gray-800 leading-tight">
-                    Data Laci
-                </h2>
+                <div className="flex flex-row items-center justify-between">
+                    <h2 className="font-semibold text-xl text-gray-800 leading-tight">
+                        Data Laci
+                    </h2>
+                    <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+                            <DialogTrigger asChild>
+                                <Button
+                                    className="bg-green-500 hover:bg-green-600 mb-2"
+                                    onClick={() => setDialogOpen(true)}
+                                >
+                                    Tambah Laci
+                                </Button>
+                            </DialogTrigger>
+                            <DialogContent>
+                                <DialogHeader>
+                                    <DialogTitle>Tambah Laci Baru</DialogTitle>
+                                    <DialogDescription>
+                                        Tambahkan data laci baru ke dalam sistem.
+                                    </DialogDescription>
+                                </DialogHeader>
+                                <Form
+                                    onSuccess={() => setDialogOpen(false)}
+                                />
+                            </DialogContent>
+                        </Dialog>
+                </div>
             }
         >
             <Head title="Laci" />
 
             <div className="py-4">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-4">
-                    {/* Tambah Laci Dialog */}
-                    <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-                        <DialogTrigger asChild>
-                            <Button
-                                className="bg-green-500 hover:bg-green-600"
-                                onClick={() => setDialogOpen(true)}
-                            >
-                                Tambah Laci
-                            </Button>
-                        </DialogTrigger>
-                        <DialogContent>
-                            <DialogHeader>
-                                <DialogTitle>Tambah Laci Baru</DialogTitle>
-                                <DialogDescription>
-                                    Tambahkan data laci baru ke dalam sistem.
-                                </DialogDescription>
-                            </DialogHeader>
-                            <Form
-                                onSuccess={() => setDialogOpen(false)}
-                            />
-                        </DialogContent>
-                    </Dialog>
+                    <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg p-4 ">
+                        {/* Tambah Laci Dialog */}
+                        
 
-                    {/* Tabel Laci */}
-                    <LaciTable data={lacis} />
+                        {/* Tabel Laci */}
+                        <LaciTable data={lacis} />
+                    </div>
                 </div>
             </div>
         </AuthenticatedLayout>

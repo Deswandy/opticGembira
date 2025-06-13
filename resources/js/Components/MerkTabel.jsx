@@ -91,14 +91,14 @@ export default function MerkTable({ data }) {
     });
 
     const columns = useMemo(() => [
-        {
-            accessorKey: "id",
-            header: ({ column }) => (
-                <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-                    ID <ArrowUpDown className="ml-2 h-4 w-4" />
-                </Button>
-            ),
-        },
+        // {
+        //     accessorKey: "id",
+        //     header: ({ column }) => (
+        //         <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+        //             ID <ArrowUpDown className="ml-2 h-4 w-4" />
+        //         </Button>
+        //     ),
+        // },
         {
             accessorKey: "merk",
             header: "Merk",
@@ -121,12 +121,12 @@ export default function MerkTable({ data }) {
                 const [editDialogOpen, setEditDialogOpen] = useState(false);
                 const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
-                const handleDelete = () => {
-                    router.delete(route('ms-merks.destroy', merk.id), {
-                        onSuccess: () => setDeleteDialogOpen(false),
-                        preserveScroll: true,
-                    });
-                };
+                // const handleDelete = () => {
+                //     router.delete(route('ms-merks.destroy', merk.id), {
+                //         onSuccess: () => setDeleteDialogOpen(false),
+                //         preserveScroll: true,
+                //     });
+                // };
 
                 return (
                     <div className="flex gap-2">
@@ -146,7 +146,7 @@ export default function MerkTable({ data }) {
                         </Dialog>
 
                         {/* Tombol Hapus */}
-                        <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+                        {/* <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
                             <DialogTrigger asChild>
                                 <Button variant="outline" size="icon" className="text-red-500 border-red-500 hover:bg-red-50 hover:text-red-600">
                                     <MdDeleteForever className="h-4 w-4" />
@@ -164,7 +164,7 @@ export default function MerkTable({ data }) {
                                     <Button variant="destructive" onClick={handleDelete}>Hapus</Button>
                                 </div>
                             </DialogContent>
-                        </Dialog>
+                        </Dialog> */}
                     </div>
                 );
             }
